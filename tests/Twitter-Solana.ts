@@ -2,6 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { TwitterSolana } from "../target/types/twitter_solana";
 import * as assert from "assert";
+import * as bs58 from "bs58";
 
 describe("Twitter-Solana", () => {
   // Configure the client to use the local cluster.
@@ -12,7 +13,7 @@ describe("Twitter-Solana", () => {
   it("Can send a new tweet", async () => {
     const tweetAccount = anchor.web3.Keypair.generate();
     await program.methods
-      .sendTweet("TOPIC HERE", "CONTENT HERE")
+      .sendTweet("topic", "content")
       .accounts({
         tweet: tweetAccount.publicKey,
         author: program.provider.publicKey,
@@ -30,8 +31,8 @@ describe("Twitter-Solana", () => {
       tweetAccountFetched.author.toBase58(),
       program.provider.publicKey.toBase58()
     );
-    assert.equal(tweetAccountFetched.topic, "TOPIC HERE");
-    assert.equal(tweetAccountFetched.content, "CONTENT HERE");
+    assert.equal(tweetAccountFetched.topic, "topic");
+    assert.equal(tweetAccountFetched.content, "content");
     assert.ok(tweetAccountFetched.timestamp);
   });
 
@@ -143,6 +144,54 @@ describe("Twitter-Solana", () => {
 
     assert.fail(
       "The instruction should have failed with a 281-character content."
+    );
+  });
+
+  it("Can fetch all tweets", async () => {
+    const tweetAccounts = await program.account.tweet.all();
+    assert.equal(tweetAccounts.length, 3);
+  });
+
+  it("can filter tweets by author", async () => {
+    const authorPublicKey = program.provider.publicKey;
+    const tweetAccounts = await program.account.tweet.all([
+      {
+        memcmp: {
+          offset: 8, // Discriminator.
+          bytes: authorPublicKey.toBase58(),
+        },
+      },
+    ]);
+
+    assert.equal(tweetAccounts.length, 2);
+    assert.ok(
+      tweetAccounts.every((tweetAccount) => {
+        return (
+          tweetAccount.account.author.toBase58() === authorPublicKey.toBase58()
+        );
+      })
+    );
+  });
+
+  it("can filter tweets by topics", async () => {
+    const tweetAccounts = await program.account.tweet.all([
+      {
+        memcmp: {
+          offset:
+            8 + // Discriminator.
+            32 + // Author public key.
+            8 + // Timestamp.
+            4, // Topic string prefix.
+          bytes: bs58.encode(Buffer.from("topic")),
+        },
+      },
+    ]);
+
+    assert.equal(tweetAccounts.length, 2);
+    assert.ok(
+      tweetAccounts.every((tweetAccount) => {
+        return tweetAccount.account.topic === "topic";
+      })
     );
   });
 });
