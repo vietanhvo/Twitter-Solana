@@ -51,9 +51,7 @@ const { connected } = useWallet()
             </router-link>
         </div>
         <div class="fixed bottom-8 right-8 md:static w-48 md:w-full">
-            <wallet-modal-provider>
-                <wallet-multi-button></wallet-multi-button>
-            </wallet-modal-provider>
+            <wallet-multi-button dark></wallet-multi-button>
         </div>
     </aside>
 </template>

@@ -8,9 +8,9 @@ const props = defineProps({
 })
 
 const { tweets, loading } = toRefs(props)
-const orderedTweets = computed(() => {
-    return tweets.value.slice().sort((a, b) => b.timestamp - a.timestamp)
-})
+const orderedTweets = computed(() => 
+    tweets.value ? tweets.value.slice().sort((a, b) => b.timestamp - a.timestamp) : []
+)
 </script>
 
 <template>
