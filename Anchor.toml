@@ -4,12 +4,19 @@ skip-lint = false
 [programs.localnet]
 twitter_solana = "E8whyuiegni6nsQYEg4GNtXyXrJK79tVwL37e34AwxPW"
 
+[programs.devnet]
+twitter_solana = "E8whyuiegni6nsQYEg4GNtXyXrJK79tVwL37e34AwxPW"
+
+[programs.mainnet]
+twitter_solana = "E8whyuiegni6nsQYEg4GNtXyXrJK79tVwL37e34AwxPW"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "/home/vietvo/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+copy-idl = "mkdir -p app/src/idl && cp target/idl/twitter_solana.json app/src/idl/twitter_solana.json"
